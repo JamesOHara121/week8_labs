@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Select a group to manage</h1>
+<ul>
+    {% for group in groups %}
+    <li><a href="{{ url_for('manage_group', group_id=group.id) }}">{{ group.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

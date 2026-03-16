@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add a topic</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.topic.label }}<br>
+            {{ form.topic(size=32) }}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+
+<h2>All topics</h2>
+    <table border="1" cellpadding="2">
+        <tr>
+            <th>Topic</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+        {% for topic in topics %}
+        <tr>
+            <td>{{ topic.name }}</td>
+            <td><a href="{{ url_for('edit_topic', topic_id=topic.id) }}">Update</a></td>
+            <td><a href="{{ url_for('delete_topic', topic_id=topic.id) }}">Delete</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

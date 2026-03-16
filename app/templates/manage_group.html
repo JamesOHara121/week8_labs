@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Manage a group</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.group_name.label }}<br>
+            {{ form.group_name(size=32) }}
+        </p>
+        <p>
+            {{ form.add_student.label }}<br>
+            {{ form.add_student(size=32) }}
+        </p>
+        <p>
+            {{ form.remove_student.label }}<br>
+            {{ form.remove_student }}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}
