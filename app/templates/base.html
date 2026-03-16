@@ -1,9 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="static/style.css">
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
+<nav>
+    <ul class="main-nav">
+        <li><a href="{{ url_for('topic') }}">Topics</a></li>
+        <li><a href="{{ url_for('add_group') }}">Create Group</a></li>
+        <li><a href="{{ url_for('manage_groups') }}">Manage Groups</a></li>
+        <li style="float:right"><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</nav>
 
 <!-- Flash messages -->
 {% with messages = get_flashed_messages() %}

@@ -97,39 +97,52 @@ def manage_group(group_id):
         flash("You do not have access to this page!")
         return redirect(url_for("manage_groups"))
 
-    # form setup
+    # FORM SETUP
     form = ManageGroupForm(group_name=group.name)
     # get list of student id's assigned to this group from StudentGroup
     student_group_list = StudentGroup.query.filter(StudentGroup.group_id == group_id)
     # get list of usernames from Student corresponding to the selected id's
     student_list = [
-        (sg.id, Student.query.get(sg.student_id).username) for sg in student_group_list
+        (sg.student_id, Student.query.get(sg.student_id).username) for sg in student_group_list
     ]
     # add the students to the dropdown menu choices
     form.remove_student.choices.extend(student_list)
 
     if form.validate_on_submit():
 
-        # change group name
+        # CHANGE GROUP NAME
         group.name = form.group_name.data
 
-        # add a student to the group
+        # ADD A STUDENT TO THE GROUP
         add_student_username = form.add_student.data
+        student_to_add = Student.query.filter_by(username=add_student_username).first()
+        # case 1: add student box is left blank
         if not add_student_username:
             pass
+        # case 2: username not recognised
+        elif not student_to_add:
+            flash("Username not recognised!")
+            return redirect(url_for("manage_group", group_id=group.id))
+        # case 3: group leader tries to add themself
+        elif current_user.id == student_to_add.id:
+            flash("You cannot add yourself to this group!")
+            return redirect(url_for("manage_group", group_id=group.id))
+        # case 4: student already exists in the group
+        elif StudentGroup.query.filter(
+            StudentGroup.student_id == student_to_add.id,
+            StudentGroup.group_id == group_id
+        ).first():
+            flash("Student is already a part of this group!")
+            return redirect(url_for("manage_group", group_id=group.id))
+        # case 5: all requirements are met - successfully add student
         else:
-            student_to_add = Student.query.filter_by(username=add_student_username).first()
-            if student_to_add:
-                student_group = StudentGroup(
-                    student_id=student_to_add.id,
-                    group_id=group.id
-                )
-                db.session.add(student_group)
-            else:
-                flash("Student not found")
-                return redirect(url_for("manage_group", group_id=group.id))
+            student_group = StudentGroup(
+                student_id=student_to_add.id,
+                group_id=group.id
+            )
+            db.session.add(student_group)
 
-        # remove a student from the group
+        # REMOVE A STUDENT FROM THE GROUP
         remove_student_id = form.remove_student.data
         if remove_student_id != "None":
             student_to_remove = StudentGroup.query.filter(
