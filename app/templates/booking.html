@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Room Booking</h1>
+<form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.group.label }}<br>
+            {{ form.group }}
+        </p>
+        <p>
+            {{ form.venue.label }}<br>
+            {{ form.venue }}
+        </p>
+        <p>
+            {{ form.date.label }}<br>
+            {{ form.date }}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

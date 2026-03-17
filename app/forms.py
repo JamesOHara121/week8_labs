@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, EmailField, SelectField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, EmailField, SelectField, DateField
 from wtforms.validators import ValidationError, DataRequired, EqualTo
 from app.models import Student
 from app import db
@@ -22,6 +22,13 @@ class ManageGroupForm(FlaskForm):
     add_student = StringField("Add a student to the group")
     remove_student = SelectField("Remove a student from the group", choices=[("None", "--Select--")])
     submit = SubmitField("Save changes")
+
+
+class BookingForm(FlaskForm):
+    group = SelectField("Select a group", choices=[])
+    venue = SelectField("Select a venue", choices=[])
+    date = DateField("Date", format='%Y-%m-%d')
+    submit = SubmitField("Submit")
 
 
 class LoginForm(FlaskForm):

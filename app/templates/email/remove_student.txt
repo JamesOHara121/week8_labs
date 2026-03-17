@@ -1,0 +1,6 @@
+Dear {{ student.username }},
+
+You have been removed from: {{ group.name }}!
+
+Kind regards,
+The StudyBuddy Team

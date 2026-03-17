@@ -1,8 +1,10 @@
 from sqlalchemy.exc import IntegrityError
-from app import app, db
+from sqlalchemy import select
+from app import app, db, mail
 from flask import redirect, url_for, flash, render_template, request
 from app.forms import *
 from app.models import *
+from app.emails import send_email
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit
 
@@ -95,7 +97,7 @@ def manage_group(group_id):
     group = Group.query.get(group_id)
     if group.group_leader_id != current_user.id:
         flash("You do not have access to this page!")
-        return redirect(url_for("manage_groups"))
+        return redirect(url_for("groups"))
 
     # FORM SETUP
     form = ManageGroupForm(group_name=group.name)
@@ -123,7 +125,7 @@ def manage_group(group_id):
         elif not student_to_add:
             flash("Username not recognised!")
             return redirect(url_for("manage_group", group_id=group.id))
-        # case 3: group leader tries to add themself
+        # case 3: group leader tries to add themselves
         elif current_user.id == student_to_add.id:
             flash("You cannot add yourself to this group!")
             return redirect(url_for("manage_group", group_id=group.id))
@@ -141,6 +143,17 @@ def manage_group(group_id):
                 group_id=group.id
             )
             db.session.add(student_group)
+            send_email(
+                subject="You have been added to a group!",
+                sender=app.config['ADMINS'][0],
+                recipients=[student_to_add.email],
+                text_body=render_template('email/add_student.txt',
+                                          student=student_to_add,
+                                          group=group),
+                html_body=render_template('email/add_student.html',
+                                          student=student_to_add,
+                                          group=group)
+            )
 
         # REMOVE A STUDENT FROM THE GROUP
         remove_student_id = form.remove_student.data
@@ -150,12 +163,64 @@ def manage_group(group_id):
                 StudentGroup.group_id == group_id
             ).first()
             db.session.delete(student_to_remove)
+            student_to_email = Student.query.get(remove_student_id)
+            send_email(
+                subject="You have been removed from a group",
+                sender=app.config['ADMINS'][0],
+                recipients=[student_to_email.email],
+                text_body=render_template('email/remove_student.txt',
+                                          student=student_to_email,
+                                          group=group),
+                html_body=render_template('email/remove_student.html',
+                                          student=student_to_email,
+                                          group=group)
+            )
 
         db.session.commit()
         flash("Group successfully updated!")
         return redirect(url_for("manage_group", group_id=group.id))
 
     return render_template("manage_group.html", form=form, group_id=group.id)
+
+
+@app.route("/groups", methods=["GET", "POST"])
+@login_required
+def groups():
+
+    # find group names
+    group_names = [group.name for group in Group.query.all()]
+
+    # find group leader usernames
+    stmt = (
+        select(
+            Student.username
+        )
+        .join(Group, Group.group_leader_id == Student.id)
+    )
+    group_leaders = [student.username for student in db.session.execute(stmt).all()]
+
+    # find topics
+    stmt2 = (
+        select(
+            Topic.name
+        )
+        .join(Group, Group.topic_id == Topic.id)
+    )
+    topics = [topic.name for topic in db.session.execute(stmt2).all()]
+
+    all_groups = {
+        "group_names": group_names,
+        "group_leaders": group_leaders,
+        "topics": topics
+    }
+    return render_template("groups.html", all_groups=all_groups)
+
+
+@app.route("/booking", methods=["GET", "POST"])
+@login_required
+def booking():
+    form = BookingForm()
+    return render_template("booking.html", form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])

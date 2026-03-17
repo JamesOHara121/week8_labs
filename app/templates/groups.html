@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>View all groups</h1>
+<table border="1" cellpadding="2">
+        <tr>
+            <th>Group</th>
+            <th>Topic</th>
+            <th>Group leader</th>
+        </tr>
+        {% for i in range(all_groups["group_names"]|length) %}
+        <tr>
+            <td>{{ all_groups["group_names"][i] }}</td>
+            <td>{{ all_groups["topics"][i] }}</td>
+            <td>{{ all_groups["group_leaders"][i] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
